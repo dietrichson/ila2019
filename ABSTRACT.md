@@ -1,9 +1,3 @@
-# Truth versus Truth: Chronicling an Information War on Wikipedia
-This repository contains all code files for reproducing and/or replicating my presentation at the 64th conference of the International Linguistic Association.
-
-## License
-[![Creative Commons License](https://i.creativecommons.org/l/by-sa/4.0/88x31.png)](http://creativecommons.org/licenses/by-sa/4.0/)  
-This work is licensed under a [Creative Commons Attribution-ShareAlike 4.0 International License](http://creativecommons.org/licenses/by-sa/4.0/).
 
 ## Abstract
 Wikipedia (Main Page, n.d.) has grown to become a go-to source for all kinds of information available in multiple languages. It is often and erroneously seen as an unbiased source since it is created by its users as an open-source project and is _democratically_ edited. While a wealth of information can indeed be seen as unbiased, bias is frequently present when articles on controversial topics are published. Wikipedia allows any user to edit a given article by clicking on the "edit" button, which takes her/him to a new page where the text can be altered. Thus, articles on Wikipedia typically contain several revisions, back-and-forth, until a consensus is reached. When more contentious issues are featured, however, a consensus may never be reached, and the competing factions continue their battle for _their truth_ to become the established one.

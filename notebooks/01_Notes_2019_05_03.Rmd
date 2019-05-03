@@ -1,0 +1,61 @@
+---
+title: "Initial Dabbeling with WikiperiR package"
+output: html_notebook
+---
+
+## Install some packages
+
+```{r}
+if(!require(WikipediR)){
+  install.packages('WikipediR')
+}
+if(!require(WikipediaR)){
+  install.packages('WikipediaR')
+}
+if(!require(here)){
+  install.packages('here')
+}
+if(!require(tidyverse)){
+  install.packages('tidyverse')
+}
+
+
+```
+
+## Run some test code
+
+
+
+```{r}
+wp_content <- revision_content("en","wikipedia", revisions = 552373187)
+
+wp_content
+```
+
+```{r}
+wp_diff <- revision_diff("en","wikipedia", revisions = 552373187, direction = "next")
+wp_diff
+```
+
+```{r}
+page_metadata <- page_info("en","wikipedia", page = "Aaron Halfaker")
+page_metadata
+```
+
+## Get contribs for 100 random pages
+```{r}
+tryCatch(myContribs <- readRDS( here("data/100RandomEnglish.RDS") ),
+         error = function(e){
+           RandomPages <- random_page("en","wikipedia", limit=100)
+           myPageIds <- lapply(RandomPages,function(x)x$pageid) %>% unlist
+           myContribs <- lapply(myPageIds, function(x){
+             tmp <- contribs(page=x)
+             df <- tmp$contribs
+             df$pageId <- x
+             df
+           }) %>% bind_rows() 
+           saveRDS(myContribs, file=here("data/100RandomEnglish.RDS")  )
+         })
+```
+  
+  

@@ -1,0 +1,132 @@
+---
+title: "Comparison Samples"
+output: html_notebook
+---
+
+## Looking at differences between samples
+
+```{r}
+library(sashaUseful)
+library(tidyverse)
+mySample <- readRDS(here('data/sample_1000_test.RDS'))
+mySample2 <- readRDS(here("data/sample_WP_algo_500.RDS"))
+
+```
+
+##Compare ranges
+```{r}
+mySample$pageId %>% range() %>% .mf()
+mySample2$pageId %>% range() %>% .mf()
+```
+
+### Compare SD / mean / range
+```{r}
+mySample %>% 
+  group_by(pageId) %>% 
+  summarize(contrib = n()) %>% 
+  pull(contrib) -> tmp
+range(tmp)
+mean(tmp)
+sd(tmp)
+mySample2 %>% 
+  group_by(pageId) %>% 
+  summarize(contrib = n()) %>% 
+  pull(contrib) -> tmp
+range(tmp)
+mean(tmp)
+sd(tmp)
+
+```
+
+## Reduce range to the one for WP
+```{r}
+mySample %>% 
+  filter(pageId>123000, pageId <998492) %>% 
+  group_by(pageId) %>% 
+  summarize(contrib = n()) %>% 
+  pull(contrib) -> tmp
+range(tmp)
+mean(tmp)
+sd(tmp)
+```
+
+No discernable difference, so what is the problem?
+
+```{r}
+mySample %>% 
+  group_by(pageId) %>% 
+  summarize(contrib = n()) %>% 
+  ggplot(aes(contrib))+geom_density()
+```
+```{r}
+mySample2 %>% 
+  group_by(pageId) %>% 
+  summarize(contrib = n()) %>% 
+  ggplot(aes(contrib))+geom_density()
+```
+
+let's pull the first 10 ids and see
+```{r}
+myPageIds <- mySample$pageId %>% unique
+mySample %>% 
+  filter(pageId %in% myPageIds[1:20]) %>% 
+  group_by(pageId) %>% 
+  summarize(contrib = n()) %>% 
+  ggplot(aes(contrib))+geom_density()
+  
+```
+```{r}
+mySample %>% 
+  filter(pageId %in% myPageIds[1:20]) %>% 
+  pull(pageId) %>% unique
+```
+
+OK, finding nothing here. 
+
+```{r}
+library(lubridate)
+mySample$Date <- as.Date(mySample$timestamp)
+mySample %>% 
+  ggplot(aes(Date)) + geom_density()
+mySample2$Date <- as.Date(mySample2$timestamp)
+mySample2 %>% 
+  ggplot(aes(Date)) + geom_density()
+
+
+```
+
+```{r}
+mySample2$source <- "WP algo"
+mySample$source <- "MY algo"
+rbind(mySample,mySample2) ->allData
+allData%>% 
+  ggplot(aes(Date, color=source)) + geom_density()
+```
+
+
+Let's take a look at all data in a scatterplot
+
+```{r}
+allData %>% 
+  group_by(source,pageId,Date) %>% 
+  summarize(n=n()) %>% 
+  ggplot(aes(Date,n,color=source))+geom_point()+
+  geom_smooth()
+
+```
+
+```{r}
+allData %>% 
+  group_by(source,pageId,Date) %>% 
+  summarize(n=n()) %>% 
+  ggplot(aes(Date,n,color=source))+
+  #geom_point()+
+  geom_smooth(method='lm')+
+  geom_smooth()
+```
+
+Manual inspection seems to indicate that my sample contains talk-pages as well as articles. Let's reload the original data and see.
+```{r}
+
+```
+

@@ -22,6 +22,8 @@ if(!require(tidyverse)){
 
 ```
 
+It looks like we'll need both packages
+
 ## Run some test code
 
 

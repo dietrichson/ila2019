@@ -1,0 +1,46 @@
+---
+title: "Comparison Samples"
+output: html_notebook
+---
+
+## Looking at differences between samples
+
+```{r}
+library(tidyverse)
+library(here)
+library(httr)
+library(rvest)
+
+mySample <- readRDS(here('data/sample_1000_test.RDS'))
+mySample2 <- readRDS(here("data/sample_WP_algo_500.RDS"))
+myRandomPages <-readRDS(here::here('data/RandomPages_729_en.RDS'))
+
+```
+
+
+## Filter our Talk-pages
+```{r}
+myTitles <- lapply(
+  myRandomPages, function(x){
+    x %>% content %>% html_nodes('title') %>% html_text
+  }
+) %>% unlist
+
+exclude <- str_detect(myTitles,'(Talk|talk|User:)')
+sum(exclude)
+mySample %>% 
+  group_by(pageId) %>% 
+  summarize(
+    n=n()
+  ) -> tmp
+tmp$exclude <- exclude
+tmp %>% 
+  filter(exclude == FALSE) %>% 
+  pull(n) -> myN
+
+mean(myN)
+median(myN)
+sd(myN)
+```
+Pretty much the same - there seems to be some bias inherent in Wikipedia!
+

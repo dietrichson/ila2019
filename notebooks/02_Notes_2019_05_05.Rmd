@@ -8,6 +8,7 @@ output: html_notebook
 ```{r}
 library(sashaUseful)
 library(tidyverse)
+library(here)
 mySample <- readRDS(here('data/sample_1000_test.RDS'))
 mySample2 <- readRDS(here("data/sample_WP_algo_500.RDS"))
 
@@ -27,12 +28,14 @@ mySample %>%
   pull(contrib) -> tmp
 range(tmp)
 mean(tmp)
+median(tmp)
 sd(tmp)
 mySample2 %>% 
   group_by(pageId) %>% 
   summarize(contrib = n()) %>% 
   pull(contrib) -> tmp
 range(tmp)
+median(tmp)
 mean(tmp)
 sd(tmp)
 
@@ -47,6 +50,7 @@ mySample %>%
   pull(contrib) -> tmp
 range(tmp)
 mean(tmp)
+median(tmp)
 sd(tmp)
 ```
 
@@ -127,6 +131,8 @@ allData %>%
 
 Manual inspection seems to indicate that my sample contains talk-pages as well as articles. Let's reload the original data and see.
 ```{r}
-
+library(rvest)
+myList <-readRDS(here::here('data/RandomPages2_729_en.RDS'))
+myList[1] %>% html_nodes('title')
 ```
 

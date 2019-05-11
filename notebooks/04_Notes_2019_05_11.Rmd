@@ -1,0 +1,49 @@
+---
+title: "Quick analysis of Random Page Contributions"
+output: html_notebook
+---
+
+
+```{r}
+myData <- readRDS( here::here("data/RandomPages_w_wikipedia_url_1000_en_contributions.RDS") )
+library(tidyverse)
+```
+
+These pages were downloaded through curl, using the random-page link on Wikipedia
+```{r}
+# names(myData)
+myData %>% 
+  group_by(pageId) %>%
+  summarize(n=n()) %>% 
+  ggplot(aes(n))+
+  geom_density()
+```
+
+```{r}
+x <- myData %>% 
+  group_by(pageId) %>%
+  summarize(n=n()) %>% 
+  pull(n)
+  mean(x)
+  median(x)
+  range(x)
+  
+```
+
+So the API (or R-package) definitely has some bias. It may also be that the calling by pageId on "contribs" returns a different set of data?
+
+```{r}
+names(myData)
+```
+
+Let's analyze the rate of change 
+
+### Cycle duration
+$$
+ T = {\lambda\over c}
+$$
+
+### Frequency
+$$
+f = {c\over \lambda}
+$$

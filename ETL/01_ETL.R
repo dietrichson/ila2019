@@ -1,6 +1,5 @@
 # Script to download random wikipedia pages
-# This script downloads random pages based on a vector of
-# page_id. The idea is to check that "randomPage" is indeed random.
+
 
 library(here)
 library(tidyverse)

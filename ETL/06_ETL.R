@@ -10,18 +10,18 @@ library(tidyverse)
 
 myDomains <- c('en','es','ca','eo','pt','gl','eu')
 myrvprops <- 'ids|timestamp|user|userid|size'
-sample_size = 2
+sample_size = 1000L
   
 for (myDomain in myDomains){
 
-  contribs_filename <- str_glue('data/RandomPages_w_wikipedia_url_1000_{myDomain}.RDS')
+  contribs_filename <- str_glue('data/sample_1000_contributions_{myDomain}.RDS')
   i <- 1
   myContribs <- lapply(1:sample_size, function(x){
     myURL <- stringr::str_glue('https://{myDomain}.wikipedia.org/wiki/Special:Random')
     cat(i,":",x,'reading from', myURL,'\n')
 
     GET(myURL) %>% content %>% html_nodes('title') %>% html_text()->myTitle
-    myTitle <- str_replace(myTitle, '- Wikipedia','')
+    myTitle <- str_replace(myTitle, ' (-|–).*','')
     cat("Extracting from ",myTitle,'\n')
     tmp <- contribs(domain = myDomain, page = myTitle,rvprop = myrvprops)
     df <-  tmp$contribs

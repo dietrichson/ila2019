@@ -8,11 +8,11 @@ library(WikipediaR)
 library(tidyverse)
 
 
-myDomains <- c('en','es','ca','eo','pt','gl','eu')
+myDomains <- c('en','es','ca','eo','pt','gl','eu', 'fr') 
 myrvprops <- 'ids|timestamp|user|userid|size'
 sample_size = 1000L
   
-for (myDomain in myDomains){
+# for (myDomain in myDomains){
 
   contribs_filename <- str_glue('data/sample_1000_contributions_{myDomain}.RDS')
   i <- 1
@@ -22,6 +22,8 @@ for (myDomain in myDomains){
 
     GET(myURL) %>% content %>% html_nodes('title') %>% html_text()->myTitle
     myTitle <- str_replace(myTitle, ' (-|–).*','')
+    if (myDomain =='fr')
+      myTitle <- str_replace(myTitle, ' (-|–|—).*','')#Not sure why, this is a cut-and-paste hack...
     cat("Extracting from ",myTitle,'\n')
     tmp <- contribs(domain = myDomain, page = myTitle,rvprop = myrvprops)
     df <-  tmp$contribs
@@ -34,5 +36,5 @@ for (myDomain in myDomains){
   
   cat("Saving to:",contribs_filename,'\n')
   saveRDS(myContribs,here::here(contribs_filename))
-}
+# }
 

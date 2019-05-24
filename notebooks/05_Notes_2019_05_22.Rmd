@@ -4,9 +4,73 @@ output: html_notebook
 ---
 
 
+## Analysis of Baselines
 
 ```{r}
+library(tidyverse)
+library(here)
+
+  myData <- 
+    readRDS( here("data/sample_1000_contributions_ca.RDS") ) %>% 
+    rbind(
+      readRDS( here("data/sample_1000_contributions_en.RDS"))
+    ) %>% 
+    rbind(
+      readRDS( here("data/sample_1000_contributions_eo.RDS"))
+    ) %>% 
+    rbind(
+      readRDS( here("data/sample_1000_contributions_es.RDS"))
+    ) %>% 
+    rbind(
+      readRDS( here("data/sample_1000_contributions_eu.RDS"))
+    ) %>% 
+    rbind(
+      readRDS( here("data/sample_1000_contributions_gl.RDS"))
+    ) %>% 
+   rbind(
+     readRDS( here("data/sample_1000_contributions_fr.RDS"))
+  ) %>%
+    rbind(
+      readRDS( here("data/sample_1000_contributions_pt.RDS"))
+    )  
+```
+
+```{r}
+names(myData)
+```
+
+```{r}
+myData %>% 
+  group_by(domain) %>%
+  summarize(
+    N = n()
+    )
+```
+
+```{r}
+myData %>% 
+  group_by(domain) %>% 
+  summarize(N=n()) %>% 
+  ggplot(aes(fct_reorder(domain, N, .desc = TRUE),N/1000))+
+  geom_bar(stat='identity')+
+  ylab("Mean # of Edits")+
+  xlab("Language Code")+
+  ggtitle("Mean Number of Edits per Page for a Random Sample of 1000")
+```
+
+## Users of These Languages (native speakers)
+```{r}
+
+native_speakers <- c(es = 399, en = 335, pt = 203, )
+
 
 ```
 
+
+##Variability
+
+```{r}
+myData %>% 
+  
+```
 

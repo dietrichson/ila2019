@@ -8,6 +8,8 @@ output: html_notebook
 
 ```{r}
 library(tidyverse)
+library(ggpmisc)
+library(useful)
 library(here)
 
   myData <- 
@@ -58,12 +60,52 @@ myData %>%
   ggtitle("Mean Number of Edits per Page for a Random Sample of 1000")
 ```
 
-## Users of These Languages (native speakers)
+## Users of These Languages (L1 and L2)
 ```{r}
+speakers <- tribble(
+  ~Language, ~Speakers, ~Type,
+  "es", 580000000L, "L1",
+  "en", 400000000L, "L1",
+  "fr", 76800000L,  "L1",
+  "pt", 203000000L, "L1",
+  "ca", 4100000L,   "L1",
+  "gl", 1500000L,   "L1",
+  "eu", 750000,     "L1",
+  "eo", 2000L,      "L1",
+  "es", 125000000L, "L2",
+  "en", 750000000L, "L2",
+  "fr", 200000000L, "L2",
+  "pt", 20000000L,  "L2",
+  "ca", 5900000L,  "L2",
+  "gl", 900000L,    "L2",
+  "eu", 350000,     "L2",
+  "eo", 1000000L,   "L2"
+)
+# speakers <- data.frame(
+# L1 = c(es = 580000000L, en = 400000000L, fr=76800000L,  pt = 203000000L, ca = 4100000L, gl = 1500000L, eo = 2000L),
+# L2 = c(es = 125000000, en = 750000000, fr = 200000000, pt = 20000000, ca = 5900000, gl = 900000, eo = 1000000)
+# )
 
-native_speakers <- c(es = 399, en = 335, pt = 203, )
 
+```
 
+```{r}
+speakers$Language <- fct_reorder(speakers$Language,speakers$Speakers,fun = sum, .desc=TRUE)
+speakers %>% 
+  ggplot(aes(Language,Speakers,fill=Type))+
+  geom_bar(stat='identity', position = 'dodge')+
+  scale_y_continuous(labels=function(x)useful::multiple(x,'M'))+
+  xlab("Language Code")
+```
+
+### Smaller languages
+```{r}
+speakers %>% 
+  filter(Speakers <20000000L) %>% 
+  ggplot(aes(Language,Speakers,fill=Type))+
+  geom_bar(stat='identity', position = 'dodge')+
+  scale_y_continuous(labels=function(x)useful::multiple(x,'M'))+
+  xlab("Language Code")
 ```
 
 
@@ -71,6 +113,113 @@ native_speakers <- c(es = 399, en = 335, pt = 203, )
 
 ```{r}
 myData %>% 
+  group_by(domain, pageId) %>% 
+  summarize(N=n()) %>% 
+  ggplot(aes(N, color=domain))+geom_density()
   
+```
+
+```{r}
+last_plot()+
+  facet_wrap(~domain)
+```
+
+## Age of Wikipedia
+```{r}
+myData %>% 
+  group_by(domain) %>% 
+  summarize(
+    First = min(range(timestamp,na.rm = TRUE)) %>% as.Date(),
+    Last = max(range(timestamp,na.rm = TRUE)) %>% as.Date()
+    )
+```
+
+Not really that interesting
+
+## Example of Information Available
+```{r}
+myData %>% 
+  head(10)
+```
+
+## Distribution of Contribution (2)
+```{r}
+myData %>% 
+  group_by(pageId) %>% 
+  summarize(N=n())->mySummary1
+mySummary1 %>% 
+  ggplot(aes(N))+
+  geom_density()
+```
+
+```{r}
+gg2 <- mySummary1 %>% filter(N>450) %>% 
+  ggplot(aes(N))+geom_density()
+gg2
+```
+
+```{r}
+
+p<-mySummary1 %>% 
+  ggplot(aes(N))+
+  geom_density()
+
+data.tb <- tibble(x = 1, y = 1, 
+                  plot = list(gg2 +
+                                theme_bw(8)))
+
+p+
+  expand_limits(x = 0, y = 0) +
+  geom_plot_npc(data = data.tb, aes(npcx = x, npcy = y, label = plot))+
+  annotate("segment", xend = 500 , yend = 0.002, x = 450, y = .02,arrow=arrow(), color='red')
+
+```
+
+The reason for this *bump* is due to the fact the API only stores the last 500 revisions. 
+
+
+```{r}
+mySummary1 %>% 
+  filter(N>100) %>% 
+  ggplot(aes(N))+geom_histogram(binwidth = 10)+
+  ggtitle("Edits per Page N > 100")
+```
+
+As a result *frequency of edits* may be a better measure.
+
+## Frequency of Edits
+
+* Unit: Edits / week 
+
+```{r}
+#Calculate range of contributions for each page
+myData %>% 
+  group_by(domain,pageId) %>% 
+  summarize(
+    N = n(),
+    Min.Date = min(timestamp) %>% as.Date() %>% as.numeric,
+    Max.Date = max(timestamp) %>% as.Date() %>% as.numeric
+  ) %>% 
+  mutate(Date.Range = Max.Date - Min.Date) %>% 
+  mutate(Edits.per.Day = N/(Date.Range)) ->
+  mySummary2
+```
+
+```{r}
+mySummary2 %>% 
+  ggplot(aes(Edits.per.Day))+geom_histogram(binwidth = 1)+
+  ggtitle("Edits per Day")
+
+```
+
+```{r}
+smallN <- mySummary2 %>% 
+  filter(Edits.per.Day > 1) %>% nrow()
+bigN <- mySummary2 %>% nrow
+mySummary2 %>% 
+  filter(Edits.per.Day > 1) %>% 
+  ggplot(aes(Edits.per.Day))+geom_histogram(binwidth = 1)+
+  ggtitle("Edits per Day > 1 ",str_glue("{smallN} /  {bigN} ={round(smallN/bigN, digits=3)*100}%"))
+
 ```
 

@@ -57,7 +57,7 @@ myData %>%
   geom_bar(stat='identity')+
   ylab("Mean # of Edits")+
   xlab("Language Code")+
-  ggtitle("Mean Number of Edits per Page for a Random Sample of 1000")
+  ggtitle("Mean Number of Edits per Page", "Random Sample of ~1000 per Language ")
 ```
 
 ## Users of These Languages (L1 and L2)
@@ -182,14 +182,15 @@ The reason for this *bump* is due to the fact the API only stores the last 500 r
 mySummary1 %>% 
   filter(N>100) %>% 
   ggplot(aes(N))+geom_histogram(binwidth = 10)+
-  ggtitle("Edits per Page N > 100")
+  ggtitle("Edits per Page > 100")
 ```
 
 As a result *frequency of edits* may be a better measure.
 
 ## Frequency of Edits
 
-* Unit: Edits / week 
+* Unit: Edits / Day
+* Equivalent to: 11.6 µHz (microhertz)
 
 ```{r}
 #Calculate range of contributions for each page
@@ -219,7 +220,161 @@ bigN <- mySummary2 %>% nrow
 mySummary2 %>% 
   filter(Edits.per.Day > 1) %>% 
   ggplot(aes(Edits.per.Day))+geom_histogram(binwidth = 1)+
-  ggtitle("Edits per Day > 1 ",str_glue("{smallN} /  {bigN} ={round(smallN/bigN, digits=3)*100}%"))
+  ggtitle("Edits per Day > 1 ",str_glue("{smallN} /  {bigN} ≈ {round(smallN/bigN, digits=4)*100}%"))
 
+```
+
+## The Wiki Articles 
+```{r}
+wikiContribs <- readRDS(here('data/wikiPages_Catalonia_referendum_contribs_2.RDS'))
+#Calculate range of contributions for each page
+wikiContribs %>% 
+  group_by(domain,pageId) %>% 
+  summarize(
+    N = n(),
+    Min.Date = min(timestamp) %>% as.Date(),
+    Max.Date = max(timestamp) %>% as.Date(),
+    Mean.size = mean(as.numeric(size)),
+    Median.size = median(as.numeric(size)),
+    SD.size = sd(as.numeric(size))
+  ) %>% 
+  mutate(Date.Range = Max.Date %>% as.numeric - Min.Date %>% as.numeric) %>% 
+  mutate(Edits.per.Day = N/(Date.Range)) %>% 
+  mutate(Size.Change.per.Day = Mean.size/Date.Range)->
+  mySummary3
+```
+
+```{r}
+mySummary3 %>% 
+  ggplot(aes(fct_reorder(domain,desc(Edits.per.Day) ), Edits.per.Day))+
+  geom_bar(stat='identity')+
+  ggtitle("Edits per Day, Nine Wikipedia Pages on Catalonian Independence")+
+  xlab("Language Code")
+```
+
+## Size Change
+```{r}
+mySummary3 %>% 
+  ggplot(aes(fct_reorder(domain,desc(Size.Change.per.Day) ), Size.Change.per.Day))+
+  geom_bar(stat='identity')+
+  ggtitle("Edits per Day, Nine Wikipedia Pages on Catalonian Independence")+
+  xlab("Language Code")
+```
+
+## Summary Data
+```{r}
+mySummary3 %>% 
+  knitr::kable()
+```
+
+## Timelines
+```{r}
+wikiContribs <- wikiContribs %>% 
+  mutate(Date = as.Date(timestamp))
+
+  wikiContribs %>% 
+   # group_by(Date, domain) %>% 
+    group_by(Date) %>% 
+    summarize(N=n()) %>% 
+    ggplot(aes(Date,N))+
+    geom_line(stat='identity')+
+    ggtitle("Edits per Day") -> gg2
+```
+
+```{r}
+#gg2 <-  
+  gg2+
+  annotate('segment',xend=as.Date('2017-10-05'),x=as.Date("2017-12-01"), yend=100,y=110, color='red', arrow=arrow(length=unit(.1,'inches')))+
+  annotate('text',x=as.Date("2017-12-01"), y=112, label='October 1st',hjust=0)+
+  annotate('text',x=as.Date("2017-12-01"), y=107, label='Independence Referendum',hjust=0)
+  
+ # gg2
+  
+```
+
+## Zooming in
+
+```{r}
+focussed <- wikiContribs %>% 
+  filter(Date >= '2017-09-01',
+         Date <= '2018-02-28') %>% 
+   # group_by(Date, domain) %>% 
+    group_by(Date) %>% 
+    summarize(N=n())
+```
+
+## Zooming in (2)
+```{r}
+myDateSeq <- seq.Date(min(focussed$Date), max(focussed$Date), by='7 days')
+focussed %>% 
+  ggplot(aes(Date,N)) +
+  geom_line()+
+  scale_x_date(date_breaks='1 month',date_labels='%b')+
+  annotate('text',x=myDateSeq,y=-1,label=format.Date(myDateSeq,"%d"), color='red',alpha=.7, cex=2) -> gg3
+
+gg3
+  
+
+
+```
+
+```{r}
+gg3+annotate('segment',xend=as.Date('2017-10-05'),x=as.Date("2017-11-01"), yend=100,y=110, color='red', arrow=arrow(length=unit(.1,'inches')))+
+  annotate('text',x=as.Date("2017-11-01"), y=112, label='October 1st',hjust=0)+
+  annotate('text',x=as.Date("2017-11-01"), y=107, label='Independence Referendum',hjust=0) ->gg4
+
+gg4
+```
+
+```{r}
+gg4 + annotate('segment',xend=as.Date('2017-10-28'),x=as.Date("2017-11-27"), yend = 50,y = 60, color='red', arrow=arrow(length=unit(.1,'inches')))+
+  annotate('text',x=as.Date("2017-11-28"), y=63, label='Indepencence Declared',hjust=0)+
+  annotate('text',x=as.Date("2017-11-28"), y=58, label='Self-Government Suspended',hjust=0) -> gg5
+gg5
+```
+
+```{r}
+gg5 + annotate('segment',xend=as.Date('2018-01-08'),x=as.Date("2018-02-01"), yend = 40,y = 50, color='red', arrow=arrow(length=unit(.1,'inches')))+
+  annotate('text',x=as.Date("2018-02-01"), y=50, label='Three Kings Day',hjust=0)+
+  annotate('text',x=as.Date("2018-02-01"), y=45, label='(Reyes)',hjust=0)
+
+  
+```
+
+## By Domain
+```{r}
+focussed2 <- wikiContribs %>% 
+  filter(Date >= '2017-09-01',
+         Date <= '2018-02-28') %>% 
+   # group_by(Date, domain) %>% 
+    group_by(Date, domain) %>% 
+    summarize(N=n())
+focussed2 %>%  
+  ggplot(aes(Date,N,color=domain))+
+  geom_line()
+  
+```
+
+```{r}
+myEvents <- tribble(~Event,~Date,
+                    "Referendum",as.Date('2017-10-01'),
+                    "155",as.Date('2017-10-27'),
+                    "Reyes",as.Date('2018-01-08'),
+                    )
+focussed2 %>% 
+  #filter(domain %in% c("ca","en","es","eu", "fr")) %>% 
+  ggplot(aes(Date,N))+geom_line()+
+# +
+   geom_point(aes(Date,40), data=myEvents)+
+   facet_wrap(~domain,ncol=1)
+```
+
+```{r}
+focussed2 %>% 
+  filter(domain %in% c("ca","en","es","eu", "fr")) %>% 
+  ggplot(aes(Date,N))+geom_line()+
+# +
+   geom_point(aes(Date,40), data=myEvents)+
+   facet_wrap(~domain,ncol=1)
 ```
 

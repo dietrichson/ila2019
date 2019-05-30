@@ -1,0 +1,28 @@
+---
+title: "Notes 2019-05-29"
+output: html_notebook
+---
+
+
+
+```{r}
+library(tidyverse)
+library(tidytext)
+library(rvest)
+library(here)
+library(syuzhet)
+myData <- readRDS(here("data/wikiPages_catalonia_referendum.RDS"))
+
+myPage <- read_html(myData[[1]])
+myPage %>% 
+  html_node('title') %>% 
+  html_text() -> title
+myPage %>% 
+  html_node("body") %>% 
+  html_text() -> body
+
+mySentences <- get_sentences(body)
+myAnalysis <- syuzhet::get_nrc_sentiment(mySentences, language = 'english')
+```
+
+Putting this in an ETL-script

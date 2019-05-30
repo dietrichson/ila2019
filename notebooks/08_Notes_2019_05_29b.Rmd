@@ -1,0 +1,66 @@
+---
+title: "Notes 2019-05-29"
+output: html_notebook
+---
+
+
+
+```{r}
+library(tidyverse)
+library(tidytext)
+library(here)
+myData <- readRDS(here("data/wikipages_with_sentiment_analysis.RDS"))
+myPages <- readRDS(here("data/wikiPages_catalonia_referendum.RDS"))
+myWords <- readRDS(here("data/wikipages_parsed_by_word.RDS"))
+```
+
+## Two-dimensional Sentiment Analysis
+
+```{r}
+myData %>% 
+  group_by(domain) %>% 
+  summarize (Number.of.Sentences = n(),
+             Positive = sum(positive),
+             Negative = sum(negative),
+             Absolute.Sentiment = sum(positive-negative)) %>% 
+  mutate(Relative.Sentiment = Absolute.Sentiment/Number.of.Sentences)
+```
+
+## Multidimensional Sentiment Analysis
+
+```{r}
+mySentiments <- c('anger','anticipation','disgust','fear','joy','sadness','surprise','trust')
+myData %>% 
+  group_by(domain) %>% 
+  summarize_at (mySentiments,
+                .funs=sum) %>% 
+  left_join(myData %>% 
+              group_by(domain) %>% 
+              summarize(Number.of.Sentences=n()))
+                
+```
+
+## Example "illegal"
+
+```{r}
+myDF <- tribble(~domain,~word,
+                    'en','illegal',
+                    'es','ilegal',
+                    'ca','il·legal',
+                    'eu', 'legez', #legez kanpoco'
+                    'fr', 'illégal',
+                    'pt','ilegal'
+                    )
+
+
+
+myDF$times <- sapply(1:nrow(myTestDF), function(i){
+  myWords %>% 
+    filter(domain == myTestDF$domain[i]) %>% 
+    pull(word) %>% 
+    str_detect(myTestDF$word[i]) %>% 
+    sum()
+})
+  
+```
+

@@ -1,0 +1,83 @@
+---
+title: "Notes 2019-05-30"
+output: html_notebook
+---
+
+## Analyze Number of Contributors
+
+```{r}
+library(tidyverse)
+library(here)
+myData <- readRDS(here("data/wikiPages_Catalonia_referendum_contribs_2.RDS"))
+```
+
+```{r}
+myData %>% 
+  group_by(domain) %>% 
+  summarize(Contributors = n_distinct(user))
+```
+
+```{r}
+
+myData %>% filter(domain=='en') %>% pull(user) %>% unique() %in% (myData %>% filter(domain=='es') %>% pull(user) %>% unique()) %>% sum
+
+myData %>% filter(domain=='en') %>% pull(user) %>% unique() %in% (myData %>% filter(domain=='ca') %>% pull(user) %>% unique()) %>% sum
+
+
+myData %>% filter(domain=='fr') %>% pull(user) %>% unique() %in% (myData %>% filter(domain=='ca') %>% pull(user) %>% unique()) %>% sum
+
+myData %>% filter(domain=='fr') %>% pull(user) %>% unique() %in% (myData %>% filter(domain=='es') %>% pull(user) %>% unique()) %>% sum
+
+myData %>% filter(domain=='ca') %>% pull(user) %>% unique() %in% (myData %>% filter(domain=='es') %>% pull(user) %>% unique()) %>% sum
+
+
+
+```
+
+Does not seem to lead anywhere
+
+
+```{r}
+myData %>% filter(domain=='en') %>% pull(userid) %>% unique() %in% (myData %>% filter(domain=='es') %>% pull(userid) %>% unique()) %>% sum
+
+myData %>% filter(domain=='en') %>% pull(userid) %>% unique() %in% (myData %>% filter(domain=='ca') %>% pull(userid) %>% unique()) %>% sum
+
+
+myData %>% filter(domain=='fr') %>% pull(userid) %>% unique() %in% (myData %>% filter(domain=='ca') %>% pull(userid) %>% unique()) %>% sum
+
+myData %>% filter(domain=='fr') %>% pull(userid) %>% unique() %in% (myData %>% filter(domain=='es') %>% pull(userid) %>% unique()) %>% sum
+
+myData %>% filter(domain=='ca') %>% pull(userid) %>% unique() %in% (myData %>% filter(domain=='es') %>% pull(userid) %>% unique()) %>% sum
+```
+
+Also not interesting
+
+
+```{r}
+myData %>% 
+  filter(domain=='ca') %>% 
+  group_by(user) %>% 
+  summarize(N=n()) %>% 
+  arrange(desc(N)) %>% 
+  head(20)
+```
+
+```{r}
+myData %>% 
+  filter(domain=='es') %>% 
+  group_by(user) %>% 
+  summarize(N=n()) %>% 
+  arrange(desc(N)) %>% 
+  head(20)
+```
+
+```{r}
+myData %>% 
+  filter(domain=='en') %>% 
+  group_by(user) %>% 
+  summarize(N=n()) %>% 
+  arrange(desc(N)) %>% 
+  head(20)
+```
+
+This is more interesting

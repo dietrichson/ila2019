@@ -54,11 +54,11 @@ myDF <- tribble(~domain,~word,
 
 
 
-myDF$times <- sapply(1:nrow(myTestDF), function(i){
+myDF$times <- sapply(1:nrow(myDF), function(i){
   myWords %>% 
-    filter(domain == myTestDF$domain[i]) %>% 
+    filter(domain == myDF$domain[i]) %>% 
     pull(word) %>% 
-    str_detect(myTestDF$word[i]) %>% 
+    str_detect(myDF$word[i]) %>% 
     sum()
 })
   

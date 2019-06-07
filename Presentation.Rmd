@@ -479,6 +479,7 @@ myData %>%
 ```{r}
 
 myData %>% 
+  filter(!domain%in%c("pt","eo")) %>% 
   group_by(domain) %>% 
   summarize_at (mySentiments,
                 .funs=sum) -> mySummary5
@@ -486,34 +487,64 @@ myData %>%
 
 ## Example: Surprise
 ```{r}
+myColorScale <-scale_fill_manual(values=c(en='royalblue',es='darkgoldenrod2',fr='cyan',eu='green',ca='red'))
 mySummary5 %>% 
-  ggplot(aes(fct_reorder(domain,surprise %>% desc),surprise))+
+  ggplot(aes(fct_reorder(domain,surprise %>% desc),surprise, fill=domain))+
   geom_bar(stat='identity')+
-  xlab("Language Code")
+  xlab("Language Code")+theme(legend.position = "none")+
+  myColorScale
 ```
 
 
 ## Example: Anger
 ```{r}
 mySummary5 %>% 
-  ggplot(aes(fct_reorder(domain,anger %>% desc),anger))+
+  ggplot(aes(fct_reorder(domain,anger %>% desc),anger,fill=domain))+
   geom_bar(stat='identity')+
-  xlab("Language Code")
+  xlab("Language Code")+ 
+  theme(legend.position = "none")+
+  myColorScale
 ```
+
 
 ## Example: Disgust
 ```{r}
 mySummary5 %>% 
-  ggplot(aes(fct_reorder(domain,disgust %>% desc),disgust))+
+  ggplot(aes(fct_reorder(domain,disgust %>% desc),disgust, fill=domain))+
   geom_bar(stat='identity')+
-  xlab("Language Code")
+  xlab("Language Code")+
+  theme(legend.position = "none")+
+  myColorScale
 ```
 
-## S Word
-- Determine one/several words that will identify you as belonging to one group or another
-- Referendum was deemed illegal by the Spanish courts, so *illegal* might be such a word.
 
-## S Word
+## Complete Profile
+
+```{r, warning=FALSE,message=FALSE}
+
+library(ggradar)
+library(scales)
+library(tibble)
+mySummary5 <- mySummary5 %>%   
+  filter(domain%in%c("ca","en","es","eu","fr") )
+rownames(mySummary5) <- mySummary5$domain
+
+mySummary5 %>% 
+  select(-domain) %>% 
+  rownames_to_column( var = "Domain" ) %>%
+  mutate_at(vars(-Domain),funs(rescale)) %>%
+  ggradar(group.line.width = 1,
+  group.point.size = 2, group.colours = c("red",'royalblue','darkgoldenrod2','green','cyan'))
+  
+```
+
+
+
+## Shibboleth Detection
+- Determine one/several words that will identify you as belonging to one group or another
+- Referendum was deemed illegal by the Spanish courts, so *illegal* might work as a *shibboleth*.
+
+## Shibboleth Detection
 
 ```{r}
 myDF <- tribble(~domain,~word,
@@ -536,10 +567,11 @@ myDF$times <- sapply(1:nrow(myDF), function(i){
 })
   
 myDF %>% 
+  arrange(-times) %>% 
   knitr::kable()
 ```
 
-## S Word
+## Shibboleth Detection
 
 ```{r}
 myDF %>% 
